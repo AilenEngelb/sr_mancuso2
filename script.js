@@ -150,7 +150,7 @@ const setupCommentForms = () => {
         await loadComments();
       } catch (error) {
         console.error(error);
-        alert("No se pudo guardar el comentario. Proba de nuevo en un momento.");
+        alert(`No se pudo guardar el comentario: ${error.message}`);
       } finally {
         submitButton.disabled = false;
         submitButton.textContent = "Enviar";
