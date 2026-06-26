@@ -1,4 +1,4 @@
-const SUPABASE_URL = "https://eoihzwzlrjlwpdgkaifc.supabase.co";
+const SUPABASE_URL = "https://eoihzwjlrjlwpdgkaifc.supabase.co";
 const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvaWh6d2pscmpsd3BkZ2thaWZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0Nzg1MTIsImV4cCI6MjA5ODA1NDUxMn0.OBupMEKHqTS8gwCulONONpet4HtCewmg8DhxRqxx5Sw";
 const COMMENTS_TABLE = "comentarios_del_juego";
