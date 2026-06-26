@@ -520,9 +520,9 @@ const setupShareButton = () => {
       }
 
       await navigator.clipboard.writeText(shareUrl);
-      shareButton.querySelector("strong").textContent = "Link copiado";
+      shareButton.textContent = "Link copiado";
       setTimeout(() => {
-        shareButton.querySelector("strong").textContent = "Copiar pagina";
+        shareButton.textContent = "Compartir pagina";
       }, 1800);
     } catch (error) {
       console.error(error);
