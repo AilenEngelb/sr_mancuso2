@@ -28,7 +28,7 @@ const supabaseRequest = async (path, options = {}) => {
 
   const responseText = await response.text();
 
-  if (!responseText) {
+  if (!responseText.trim()) {
     return null;
   }
 
