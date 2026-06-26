@@ -318,7 +318,7 @@ h2 {
 .comments-list {
   display: grid;
   gap: 10px;
-  max-height: 330px;
+  max-height: 260px;
   margin-top: 14px;
   overflow-y: auto;
   padding-right: 6px;
