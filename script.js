@@ -26,7 +26,13 @@ const supabaseRequest = async (path, options = {}) => {
     return null;
   }
 
-  return response.json();
+  const responseText = await response.text();
+
+  if (!responseText) {
+    return null;
+  }
+
+  return JSON.parse(responseText);
 };
 
 const formatDate = (dateValue) =>
