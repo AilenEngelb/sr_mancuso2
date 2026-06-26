@@ -304,9 +304,19 @@ const loadComments = async () => {
   renderLoadingState();
 
   try {
-    const comments = await supabaseRequest(
-      `${COMMENTS_TABLE}?select=id,parent_id,juego,nombre,comentario,likes,created_at&order=created_at.desc`,
-    );
+    let comments;
+
+    try {
+      comments = await supabaseRequest(
+        `${COMMENTS_TABLE}?select=id,parent_id,juego,nombre,comentario,likes,created_at&order=created_at.desc`,
+      );
+    } catch (error) {
+      console.warn("No se pudo cargar parent_id, usando comentarios simples.", error);
+      comments = await supabaseRequest(
+        `${COMMENTS_TABLE}?select=id,juego,nombre,comentario,likes,created_at&order=created_at.desc`,
+      );
+    }
+
     const commentsByGame = groupCommentsByGame(comments);
 
     gameCards.forEach((card) => renderComments(card, commentsByGame));
