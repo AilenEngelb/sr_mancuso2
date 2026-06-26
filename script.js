@@ -76,10 +76,196 @@ const groupCommentsByGame = (comments) =>
     return groupedComments;
   }, {});
 
+const buildCommentTree = (comments) => {
+  const commentsById = new Map();
+  const rootComments = [];
+
+  comments.forEach((comment) => {
+    commentsById.set(comment.id, {
+      ...comment,
+      replies: [],
+    });
+  });
+
+  commentsById.forEach((comment) => {
+    if (comment.parent_id && commentsById.has(comment.parent_id)) {
+      commentsById.get(comment.parent_id).replies.push(comment);
+      return;
+    }
+
+    rootComments.push(comment);
+  });
+
+  rootComments.forEach((comment) => {
+    comment.replies.sort(
+      (firstReply, secondReply) =>
+        new Date(firstReply.created_at) - new Date(secondReply.created_at),
+    );
+  });
+
+  return rootComments;
+};
+
+const saveComment = ({ gameId, nameText, commentText, parentId = null }) =>
+  supabaseRequest(COMMENTS_TABLE, {
+    method: "POST",
+    headers: {
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify({
+      juego: gameId,
+      nombre: nameText,
+      comentario: commentText,
+      parent_id: parentId,
+    }),
+  });
+
+const createReplyForm = (card, parentComment) => {
+  const form = document.createElement("form");
+  form.className = "reply-form";
+  form.hidden = true;
+
+  form.innerHTML = `
+    <label>
+      Nombre
+      <input
+        name="name"
+        type="text"
+        maxlength="32"
+        placeholder="Tu nombre..."
+        required
+      />
+    </label>
+    <label>
+      Respuesta
+      <textarea
+        name="comment"
+        rows="2"
+        maxlength="240"
+        placeholder="Responder comentario..."
+        required
+      ></textarea>
+    </label>
+    <button type="submit">Responder</button>
+  `;
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(form);
+    const nameText = String(formData.get("name") || "").trim();
+    const commentText = String(formData.get("comment") || "").trim();
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    if (!nameText || !commentText) {
+      return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Enviando...";
+
+    try {
+      await saveComment({
+        gameId: card.dataset.game,
+        nameText,
+        commentText,
+        parentId: parentComment.id,
+      });
+      form.reset();
+      form.hidden = true;
+      await loadComments();
+    } catch (error) {
+      console.error(error);
+      alert(`No se pudo guardar la respuesta: ${error.message}`);
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = "Responder";
+    }
+  });
+
+  return form;
+};
+
+const renderCommentItem = (card, comment) => {
+  const item = document.createElement("article");
+  item.className = comment.parent_id ? "comment-item reply-item" : "comment-item";
+
+  const author = document.createElement("strong");
+  author.className = "comment-author";
+  author.textContent = comment.nombre || "Anonimo";
+
+  const text = document.createElement("p");
+  text.textContent = comment.comentario;
+
+  const meta = document.createElement("div");
+  meta.className = "comment-meta";
+
+  const date = document.createElement("time");
+  date.dateTime = comment.created_at;
+  date.textContent = formatDate(comment.created_at);
+
+  const actions = document.createElement("div");
+  actions.className = "comment-actions";
+
+  const likeButton = document.createElement("button");
+  likeButton.type = "button";
+  likeButton.className = "like-button";
+  likeButton.setAttribute("aria-label", "Dar corazon al comentario");
+  likeButton.textContent = `\u2665 ${comment.likes || 0}`;
+
+  if (hasLikedComment(comment.id)) {
+    likeButton.classList.add("is-liked");
+    likeButton.disabled = true;
+    likeButton.setAttribute("aria-label", "Ya diste corazon a este comentario");
+  }
+
+  likeButton.addEventListener("click", () => likeComment(comment));
+  actions.append(likeButton);
+
+  if (!comment.parent_id) {
+    const replyButton = document.createElement("button");
+    replyButton.type = "button";
+    replyButton.textContent = "Responder";
+    actions.append(replyButton);
+  }
+
+  meta.append(date, actions);
+
+  if (isAdmin()) {
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.textContent = "Borrar";
+    deleteButton.addEventListener("click", () => deleteComment(comment.id));
+    actions.append(deleteButton);
+  }
+
+  item.append(author, text, meta);
+
+  if (!comment.parent_id) {
+    const replyForm = createReplyForm(card, comment);
+    const replyButton = actions.querySelector("button:nth-child(2)");
+    replyButton.addEventListener("click", () => {
+      replyForm.hidden = !replyForm.hidden;
+    });
+    item.append(replyForm);
+
+    if (comment.replies.length > 0) {
+      const repliesList = document.createElement("div");
+      repliesList.className = "replies-list";
+      comment.replies.forEach((reply) => {
+        repliesList.append(renderCommentItem(card, reply));
+      });
+      item.append(repliesList);
+    }
+  }
+
+  return item;
+};
+
 const renderComments = (card, commentsByGame) => {
   const gameId = card.dataset.game;
   const commentsList = card.querySelector("[data-comments-list]");
-  const comments = commentsByGame[gameId] || [];
+  const comments = buildCommentTree(commentsByGame[gameId] || []);
 
   commentsList.innerHTML = "";
 
@@ -92,53 +278,7 @@ const renderComments = (card, commentsByGame) => {
   }
 
   comments.forEach((comment) => {
-    const item = document.createElement("article");
-    item.className = "comment-item";
-
-    const author = document.createElement("strong");
-    author.className = "comment-author";
-    author.textContent = comment.nombre || "Anonimo";
-
-    const text = document.createElement("p");
-    text.textContent = comment.comentario;
-
-    const meta = document.createElement("div");
-    meta.className = "comment-meta";
-
-    const date = document.createElement("time");
-    date.dateTime = comment.created_at;
-    date.textContent = formatDate(comment.created_at);
-
-    const actions = document.createElement("div");
-    actions.className = "comment-actions";
-
-    const likeButton = document.createElement("button");
-    likeButton.type = "button";
-    likeButton.className = "like-button";
-    likeButton.setAttribute("aria-label", "Dar corazon al comentario");
-    likeButton.textContent = `♥ ${comment.likes || 0}`;
-
-    if (hasLikedComment(comment.id)) {
-      likeButton.classList.add("is-liked");
-      likeButton.disabled = true;
-      likeButton.setAttribute("aria-label", "Ya diste corazon a este comentario");
-    }
-
-    likeButton.addEventListener("click", () => likeComment(comment));
-    actions.append(likeButton);
-
-    meta.append(date, actions);
-
-    if (isAdmin()) {
-      const deleteButton = document.createElement("button");
-      deleteButton.type = "button";
-      deleteButton.textContent = "Borrar";
-      deleteButton.addEventListener("click", () => deleteComment(comment.id));
-      actions.append(deleteButton);
-    }
-
-    item.append(author, text, meta);
-    commentsList.append(item);
+    commentsList.append(renderCommentItem(card, comment));
   });
 };
 
@@ -165,7 +305,7 @@ const loadComments = async () => {
 
   try {
     const comments = await supabaseRequest(
-      `${COMMENTS_TABLE}?select=id,juego,nombre,comentario,likes,created_at&order=created_at.desc`,
+      `${COMMENTS_TABLE}?select=id,parent_id,juego,nombre,comentario,likes,created_at&order=created_at.desc`,
     );
     const commentsByGame = groupCommentsByGame(comments);
 
@@ -306,7 +446,7 @@ const likeComment = async (comment) => {
     await loadComments();
   } catch (error) {
     console.error(error);
-    alert(`No se pudo sumar el me gusta: ${error.message}`);
+    alert(`No se pudo sumar el corazon: ${error.message}`);
   }
 };
 
@@ -331,16 +471,10 @@ const setupCommentForms = () => {
       submitButton.textContent = "Enviando...";
 
       try {
-        await supabaseRequest(COMMENTS_TABLE, {
-          method: "POST",
-          headers: {
-            Prefer: "return=minimal",
-          },
-          body: JSON.stringify({
-            juego: gameId,
-            nombre: nameText,
-            comentario: commentText,
-          }),
+        await saveComment({
+          gameId,
+          nameText,
+          commentText,
         });
 
         form.reset();
