@@ -503,7 +503,9 @@ const setupShareButton = () => {
     return;
   }
 
-  shareButton.addEventListener("click", async () => {
+  shareButton.addEventListener("click", async (event) => {
+    event.preventDefault();
+
     const shareUrl = SITE_URL;
     const shareData = {
       title: "SR_MANCUSO",
