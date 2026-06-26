@@ -71,6 +71,10 @@ const renderComments = (card, commentsByGame) => {
     const item = document.createElement("article");
     item.className = "comment-item";
 
+    const author = document.createElement("strong");
+    author.className = "comment-author";
+    author.textContent = comment.nombre || "Anonimo";
+
     const text = document.createElement("p");
     text.textContent = comment.comentario;
 
@@ -82,7 +86,7 @@ const renderComments = (card, commentsByGame) => {
     date.textContent = formatDate(comment.created_at);
 
     meta.append(date);
-    item.append(text, meta);
+    item.append(author, text, meta);
     commentsList.append(item);
   });
 };
@@ -110,7 +114,7 @@ const loadComments = async () => {
 
   try {
     const comments = await supabaseRequest(
-      `${COMMENTS_TABLE}?select=id,juego,comentario,created_at&order=created_at.desc`,
+      `${COMMENTS_TABLE}?select=id,juego,nombre,comentario,created_at&order=created_at.desc`,
     );
     const commentsByGame = groupCommentsByGame(comments);
 
@@ -131,9 +135,10 @@ const setupCommentForms = () => {
       event.preventDefault();
 
       const formData = new FormData(form);
+      const nameText = String(formData.get("name") || "").trim();
       const commentText = String(formData.get("comment") || "").trim();
 
-      if (!commentText) {
+      if (!nameText || !commentText) {
         return;
       }
 
@@ -148,6 +153,7 @@ const setupCommentForms = () => {
           },
           body: JSON.stringify({
             juego: gameId,
+            nombre: nameText,
             comentario: commentText,
           }),
         });
