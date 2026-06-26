@@ -16,7 +16,10 @@ const supabaseRequest = async (path, options = {}) => {
   });
 
   if (!response.ok) {
-    throw new Error("No se pudo conectar con los comentarios.");
+    const errorText = await response.text();
+    throw new Error(
+      `Supabase respondio ${response.status}: ${errorText || response.statusText}`,
+    );
   }
 
   if (response.status === 204) {
@@ -85,11 +88,14 @@ const renderLoadingState = () => {
   });
 };
 
-const renderErrorState = () => {
+const renderErrorState = (message) => {
   gameCards.forEach((card) => {
     const commentsList = card.querySelector("[data-comments-list]");
-    commentsList.innerHTML =
-      '<p class="comments-empty">No se pudieron cargar los comentarios.</p>';
+    const errorMessage = document.createElement("p");
+    errorMessage.className = "comments-empty";
+    errorMessage.textContent = `No se pudieron cargar los comentarios. ${message}`;
+    commentsList.innerHTML = "";
+    commentsList.append(errorMessage);
   });
 };
 
@@ -103,8 +109,9 @@ const loadComments = async () => {
     const commentsByGame = groupCommentsByGame(comments);
 
     gameCards.forEach((card) => renderComments(card, commentsByGame));
-  } catch {
-    renderErrorState();
+  } catch (error) {
+    console.error(error);
+    renderErrorState("Revisa la consola del navegador.");
   }
 };
 
@@ -141,7 +148,8 @@ const setupCommentForms = () => {
 
         form.reset();
         await loadComments();
-      } catch {
+      } catch (error) {
+        console.error(error);
         alert("No se pudo guardar el comentario. Proba de nuevo en un momento.");
       } finally {
         submitButton.disabled = false;

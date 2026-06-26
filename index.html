@@ -91,27 +91,59 @@
         </div>
 
         <div class="games-grid">
-          <article class="game-card">
+          <article class="game-card" data-game="fortnite">
             <img
               src="fornite.webp"
               alt="Imagen de Fortnite"
             />
-            <div>
+            <div class="game-card-content">
               <p>Battle royale</p>
               <h3>Fortnite</h3>
               <span>Clips rapidos, partidas con comunidad y mejores jugadas.</span>
+
+              <form class="comment-form" data-comment-form>
+                <label>
+                  Comentarios
+                  <textarea
+                    name="comment"
+                    rows="3"
+                    maxlength="240"
+                    placeholder="Deja tu comentario..."
+                    required
+                  ></textarea>
+                </label>
+                <button type="submit">Enviar</button>
+              </form>
+
+              <div class="comments-list" data-comments-list></div>
             </div>
           </article>
 
-          <article class="game-card">
+          <article class="game-card" data-game="counter">
             <img
               src="counter.webp"
               alt="Imagen de Counter-Strike"
             />
-            <div>
+            <div class="game-card-content">
               <p>Shooter tactico</p>
               <h3>Counter-Strike</h3>
               <span>Rondas intensas, clutchs y momentos competitivos.</span>
+
+              <form class="comment-form" data-comment-form>
+                <label>
+                  Comentarios
+                  <textarea
+                    name="comment"
+                    rows="3"
+                    maxlength="240"
+                    placeholder="Deja tu comentario..."
+                    required
+                  ></textarea>
+                </label>
+                <button type="submit">Enviar</button>
+              </form>
+
+              <div class="comments-list" data-comments-list></div>
             </div>
           </article>
         </div>
@@ -160,5 +192,6 @@
         </div>
       </section>
     </main>
+    <script src="script.js"></script>
   </body>
 </html>
