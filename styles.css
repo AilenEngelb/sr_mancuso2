@@ -415,7 +415,7 @@ h2 {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 .comment-meta button {
@@ -426,8 +426,8 @@ h2 {
 
 .comment-meta .like-button {
   border: 1px solid rgba(244, 200, 74, 0.38);
-  background: rgba(244, 200, 74, 0.1);
-  color: #fff7cf;
+  background: var(--accent);
+  color: #15130b;
 }
 
 .comment-meta .like-button.is-liked {
