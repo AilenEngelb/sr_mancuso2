@@ -16,7 +16,7 @@
     <meta property="og:type" content="website" />
     <meta property="og:image" content="perfil.png" />
     <link rel="preconnect" href="https://images.unsplash.com" />
-    <link rel="stylesheet" href="styles.css?v=11" />
+    <link rel="stylesheet" href="styles.css?v=12" />
   </head>
   <body>
     <main class="page-shell">
@@ -100,12 +100,26 @@
               Compartir pagina
             </a>
             <div class="admin-panel" data-admin-panel>
-              <span data-admin-status>Modo admin inactivo</span>
-              <button type="button" data-admin-login>Entrar admin</button>
-              <button type="button" data-admin-logout hidden>Salir</button>
+              <span data-user-status>Entrar para comentar</span>
+              <button type="button" data-user-login>Entrar</button>
+              <button type="button" data-user-logout hidden>Salir</button>
             </div>
           </div>
         </div>
+
+        <form class="profile-form" data-profile-form hidden>
+          <label>
+            Nombre publico
+            <input
+              name="publicName"
+              type="text"
+              maxlength="32"
+              placeholder="Como queres aparecer..."
+              required
+            />
+          </label>
+          <button type="submit">Guardar nombre</button>
+        </form>
 
         <div class="games-grid">
           <article class="game-card" data-game="fortnite">
@@ -119,16 +133,6 @@
               <span>Clips rapidos, partidas con comunidad y mejores jugadas.</span>
 
               <form class="comment-form" data-comment-form>
-                <label>
-                  Nombre
-                  <input
-                    name="name"
-                    type="text"
-                    maxlength="32"
-                    placeholder="Tu nombre..."
-                    required
-                  />
-                </label>
                 <label>
                   Comentarios
                   <textarea
@@ -158,16 +162,6 @@
 
               <form class="comment-form" data-comment-form>
                 <label>
-                  Nombre
-                  <input
-                    name="name"
-                    type="text"
-                    maxlength="32"
-                    placeholder="Tu nombre..."
-                    required
-                  />
-                </label>
-                <label>
                   Comentarios
                   <textarea
                     name="comment"
@@ -195,16 +189,6 @@
               <span>Partidas estrategicas, jugadas en equipo y momentos de ranked.</span>
 
               <form class="comment-form" data-comment-form>
-                <label>
-                  Nombre
-                  <input
-                    name="name"
-                    type="text"
-                    maxlength="32"
-                    placeholder="Tu nombre..."
-                    required
-                  />
-                </label>
                 <label>
                   Comentarios
                   <textarea
@@ -268,6 +252,6 @@
       </section>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=19"></script>
+    <script src="script.js?v=20"></script>
   </body>
 </html>
